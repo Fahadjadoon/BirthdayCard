@@ -1,66 +1,59 @@
 document.addEventListener('DOMContentLoaded', function() {
 
-    // --- Live Human-Friendly Age Counter ---
+    // --- Live Human-Friendly Cumulative Age Counter ---
     const birthDate = new Date('1999-09-17T00:00:00');
     const countdownElement = document.getElementById('countdown');
 
     function updateAge() {
         const now = new Date();
 
-        let years = now.getFullYear() - birthDate.getFullYear();
-        let months = now.getMonth() - birthDate.getMonth();
-        let days = now.getDate() - birthDate.getDate();
-        let hours = now.getHours() - birthDate.getHours();
-        let minutes = now.getMinutes() - birthDate.getMinutes();
-        let seconds = now.getSeconds() - birthDate.getSeconds();
+        // Total time lived in milliseconds
+        const totalMs = now - birthDate;
 
-        if (seconds < 0) {
-            seconds += 60;
-            minutes--;
-        }
-        if (minutes < 0) {
-            minutes += 60;
-            hours--;
-        }
-        if (hours < 0) {
-            hours += 24;
-            days--;
-        }
-        if (days < 0) {
-            const prevMonth = new Date(now.getFullYear(), now.getMonth(), 0);
-            days += prevMonth.getDate();
-            months--;
-        }
-        if (months < 0) {
-            months += 12;
+        // Total units since birth
+        const totalSeconds = Math.floor(totalMs / 1000);
+        const totalMinutes = Math.floor(totalMs / (1000 * 60));
+        const totalHours = Math.floor(totalMs / (1000 * 60 * 60));
+        const totalDays = Math.floor(totalMs / (1000 * 60 * 60 * 24));
+
+        // Completed years
+        let years = now.getFullYear() - birthDate.getFullYear();
+        const birthdayThisYear = new Date(now.getFullYear(), birthDate.getMonth(), birthDate.getDate());
+        if (now < birthdayThisYear) {
             years--;
         }
 
+        // Total months elapsed since birth
+        let months = (now.getFullYear() - birthDate.getFullYear()) * 12 + (now.getMonth() - birthDate.getMonth());
+        if (now.getDate() < birthDate.getDate()) {
+            months--;
+        }
+
         countdownElement.innerHTML = `
-            <div class="mt-8 max-w-3xl mx-auto">
-                <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-6 gap-3 md:gap-4">
+            <div class="mt-8 max-w-4xl mx-auto px-2">
+                <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3 md:gap-4">
                     <div class="counter-card">
                         <div class="counter-number">${years}</div>
                         <div class="counter-label">Years</div>
                     </div>
                     <div class="counter-card">
-                        <div class="counter-number">${months}</div>
+                        <div class="counter-number">${months.toLocaleString()}</div>
                         <div class="counter-label">Months</div>
                     </div>
                     <div class="counter-card">
-                        <div class="counter-number">${days}</div>
+                        <div class="counter-number">${totalDays.toLocaleString()}</div>
                         <div class="counter-label">Days</div>
                     </div>
                     <div class="counter-card">
-                        <div class="counter-number">${hours}</div>
+                        <div class="counter-number">${totalHours.toLocaleString()}</div>
                         <div class="counter-label">Hours</div>
                     </div>
                     <div class="counter-card">
-                        <div class="counter-number">${minutes}</div>
+                        <div class="counter-number">${totalMinutes.toLocaleString()}</div>
                         <div class="counter-label">Minutes</div>
                     </div>
                     <div class="counter-card counter-seconds">
-                        <div class="counter-number">${seconds}</div>
+                        <div class="counter-number">${totalSeconds.toLocaleString()}</div>
                         <div class="counter-label">Seconds</div>
                     </div>
                 </div>
@@ -81,7 +74,8 @@ document.addEventListener('DOMContentLoaded', function() {
                     -webkit-backdrop-filter: blur(12px);
                     border: 1px solid rgba(255, 255, 255, 0.35);
                     border-radius: 16px;
-                    padding: 14px 10px;
+                    padding: 14px 12px;
+                    min-width: 0; /* Keeps box structure tight on flex/grid overflow */
                     box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
                     transition: all 0.3s ease;
                 }
@@ -91,18 +85,21 @@ document.addEventListener('DOMContentLoaded', function() {
                     box-shadow: 0 12px 30px rgba(0, 0, 0, 0.20);
                 }
                 .counter-number {
-                    font-size: 1.6rem;
+                    font-size: clamp(1rem, 2.5vw, 1.35rem); /* Responsive fluid font size */
                     font-weight: 700;
                     line-height: 1.2;
                     color: #ffffff;
                     text-shadow: 0 2px 8px rgba(0, 0, 0, 0.25);
+                    white-space: nowrap;
+                    overflow: hidden;
+                    text-overflow: ellipsis;
                 }
                 .counter-label {
                     margin-top: 4px;
-                    font-size: 0.75rem;
+                    font-size: 0.72rem;
                     font-weight: 600;
                     text-transform: uppercase;
-                    letter-spacing: 1.2px;
+                    letter-spacing: 1px;
                     color: rgba(255, 255, 255, 0.85);
                 }
                 .counter-seconds {
@@ -113,9 +110,8 @@ document.addEventListener('DOMContentLoaded', function() {
                     to { box-shadow: 0 8px 30px rgba(255, 183, 197, 0.45); }
                 }
                 @media (max-width: 640px) {
-                    .counter-card { padding: 10px 6px; border-radius: 12px; }
-                    .counter-number { font-size: 1.25rem; }
-                    .counter-label { font-size: 0.65rem; letter-spacing: 0.8px; }
+                    .counter-card { padding: 12px 8px; border-radius: 12px; }
+                    .counter-label { font-size: 0.65rem; letter-spacing: 0.5px; }
                 }
             `;
             document.head.appendChild(style);
